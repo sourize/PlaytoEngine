@@ -1,6 +1,7 @@
 import os
 import dj_database_url
 from pathlib import Path
+from corsheaders.defaults import default_headers
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -30,7 +31,6 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 # Allow standard headers plus our custom idempotency header
-from corsheaders.defaults import default_headers
 CORS_ALLOW_HEADERS = list(default_headers) + [
     'idempotency-key',
 ]
