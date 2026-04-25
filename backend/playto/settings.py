@@ -29,6 +29,12 @@ CORS_ALLOWED_ORIGINS = [
     o for o in os.environ.get('CORS_ALLOWED_ORIGINS', '').split(',') if o
 ]
 
+# Allow standard headers plus our custom idempotency header
+from corsheaders.defaults import default_headers
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    'idempotency-key',
+]
+
 ROOT_URLCONF = 'playto.urls'
 
 # Database
