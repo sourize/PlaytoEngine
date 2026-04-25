@@ -7,8 +7,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY backend/ .
 
-# Strip Windows CRLF line endings — Git on Windows converts LF→CRLF,
-# which breaks shell scripts running on Linux inside the container.
+# Strip Windows CRLF line endings so start.sh runs cleanly on Linux
 RUN sed -i 's/\r$//' start.sh
 
-CMD ["gunicorn", "playto.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "2", "--timeout", "120"]
+# start.sh runs: migrate → seed → gunicorn on ${PORT:-8000}
+# Railway overrides this per-service via dashboard Start Command
+CMD ["sh", "start.sh"]
