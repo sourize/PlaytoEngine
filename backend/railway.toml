@@ -1,0 +1,12 @@
+[build]
+# Use the existing Dockerfile in backend/
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+# start.sh runs: migrate → seed → celery worker & → celery beat & → gunicorn
+startCommand = "sh start.sh"
+healthcheckPath = "/api/v1/merchants/"
+healthcheckTimeout = 300
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
