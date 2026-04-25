@@ -54,7 +54,7 @@ export default function App() {
         ) : loading ? (
           <div className="text-center py-20 text-slate-500">Loading...</div>
         ) : selected ? (
-          <Dashboard merchant={selected} />
+          <Dashboard key={selected.id} merchant={selected} />
         ) : (
           <div className="text-center py-20 text-slate-500">No merchants found. Run the seed command.</div>
         )}
