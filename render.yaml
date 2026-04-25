@@ -1,0 +1,163 @@
+# Render Infrastructure Blueprint
+# Deploy: connect your GitHub repo on render.com → New → Blueprint
+# Docs: https://render.com/docs/blueprint-spec
+
+databases:
+  - name: playto-db
+    databaseName: playto
+    user: playto
+    plan: free               # Free tier: 1GB storage, expires after 90 days on free plan
+
+services:
+  # ── Managed Redis ──────────────────────────────────────────────────────────
+  - type: redis
+    name: playto-redis
+    plan: free               # Free tier: 25MB, no persistence
+    ipAllowList: []          # Only accessible from within Render (internal network)
+
+  # ── Django API (gunicorn) ──────────────────────────────────────────────────
+  - type: web
+    name: playto-backend
+    env: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free               # Free tier: spins down after 15min inactivity
+    # Migrations + seed run before gunicorn starts
+    startCommand: >
+      sh -c "python manage.py makemigrations merchants payouts &&
+             python manage.py migrate &&
+             python manage.py seed &&
+             gunicorn playto.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120"
+    healthCheckPath: /api/v1/merchants/
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: playto.settings
+      - key: DEBUG
+        value: "False"
+      - key: SECRET_KEY
+        generateValue: true    # Render auto-generates a secure random value
+      # ALLOWED_HOSTS: add your actual Render URL after first deploy
+      # e.g. "playto-backend.onrender.com"
+      - key: ALLOWED_HOSTS
+        value: "localhost,playto-backend.onrender.com"
+      # CORS: set to your Vercel URL after deploying frontend
+      # e.g. "https://playto-payout.vercel.app"
+      - key: CORS_ALLOW_ALL_ORIGINS
+        value: "False"
+      - key: CORS_ALLOWED_ORIGINS
+        value: "https://playto-payout.vercel.app"   # ← UPDATE THIS after Vercel deploy
+      # Database — pulled from the managed DB above
+      - key: DB_HOST
+        fromDatabase:
+          name: playto-db
+          property: host
+      - key: DB_NAME
+        fromDatabase:
+          name: playto-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: playto-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: playto-db
+          property: password
+      - key: DB_PORT
+        fromDatabase:
+          name: playto-db
+          property: port
+      # Redis — pulled from the managed Redis above
+      - key: REDIS_URL
+        fromService:
+          name: playto-redis
+          type: redis
+          property: connectionString
+
+  # ── Celery Worker ──────────────────────────────────────────────────────────
+  - type: worker
+    name: playto-celery-worker
+    env: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    startCommand: celery -A playto worker --loglevel=info --concurrency=2
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: playto.settings
+      - key: DEBUG
+        value: "False"
+      - key: SECRET_KEY
+        fromService:
+          name: playto-backend
+          type: web
+          envVarKey: SECRET_KEY
+      - key: DB_HOST
+        fromDatabase:
+          name: playto-db
+          property: host
+      - key: DB_NAME
+        fromDatabase:
+          name: playto-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: playto-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: playto-db
+          property: password
+      - key: DB_PORT
+        fromDatabase:
+          name: playto-db
+          property: port
+      - key: REDIS_URL
+        fromService:
+          name: playto-redis
+          type: redis
+          property: connectionString
+
+  # ── Celery Beat (scheduler) ────────────────────────────────────────────────
+  - type: worker
+    name: playto-celery-beat
+    env: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    startCommand: celery -A playto beat --loglevel=info
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: playto.settings
+      - key: DEBUG
+        value: "False"
+      - key: SECRET_KEY
+        fromService:
+          name: playto-backend
+          type: web
+          envVarKey: SECRET_KEY
+      - key: DB_HOST
+        fromDatabase:
+          name: playto-db
+          property: host
+      - key: DB_NAME
+        fromDatabase:
+          name: playto-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: playto-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: playto-db
+          property: password
+      - key: DB_PORT
+        fromDatabase:
+          name: playto-db
+          property: port
+      - key: REDIS_URL
+        fromService:
+          name: playto-redis
+          type: redis
+          property: connectionString

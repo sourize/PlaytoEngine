@@ -1,0 +1,40 @@
+# Environment — NEVER commit these
+.env
+*.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+.venv/
+venv/
+env/
+
+# Django
+backend/staticfiles/
+backend/celerybeat-schedule
+backend/celerybeat.pid
+*.sqlite3
+
+# Node
+frontend/node_modules/
+frontend/dist/
+
+# Docker
+.docker/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo

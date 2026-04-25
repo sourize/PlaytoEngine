@@ -1,0 +1,53 @@
+# Production docker-compose — use alongside base file:
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#
+# Required environment variables (set in your server's .env or CI secrets):
+#   SECRET_KEY, DB_PASSWORD, ALLOWED_HOSTS, CORS_ALLOWED_ORIGINS
+
+services:
+  db:
+    restart: always
+    # In production: use a managed DB (RDS, Cloud SQL) instead of this container.
+    # If using managed DB, remove this service and set DB_HOST to the managed endpoint.
+
+  redis:
+    restart: always
+    # In production: use a managed Redis (ElastiCache, Upstash) instead.
+
+  backend:
+    restart: always
+    # Replace runserver with gunicorn for production
+    command: >
+      sh -c "python manage.py makemigrations merchants payouts &&
+             python manage.py migrate &&
+             python manage.py seed &&
+             gunicorn playto.wsgi:application --bind 0.0.0.0:8000 --workers 4 --timeout 120"
+    # Remove volume mount in production — code is baked into the image
+    volumes: []
+    environment:
+      DEBUG: "False"
+      DJANGO_SETTINGS_MODULE: playto.settings
+
+  celery_worker:
+    restart: always
+    volumes: []
+    environment:
+      DEBUG: "False"
+      DJANGO_SETTINGS_MODULE: playto.settings
+
+  celery_beat:
+    restart: always
+    volumes: []
+    environment:
+      DEBUG: "False"
+      DJANGO_SETTINGS_MODULE: playto.settings
+
+  frontend:
+    # Replace Vite dev server with nginx serving the built static files
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
