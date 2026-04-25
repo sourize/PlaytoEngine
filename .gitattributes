@@ -1,0 +1,15 @@
+# Enforce LF line endings for files that run on Linux
+# Prevents Windows CRLF from breaking shell scripts in Docker containers
+*.sh        text eol=lf
+*.py        text eol=lf
+*.toml      text eol=lf
+*.yaml      text eol=lf
+*.yml       text eol=lf
+*.txt       text eol=lf
+*.md        text eol=lf
+*.json      text eol=lf
+*.jsx       text eol=lf
+*.js        text eol=lf
+*.css       text eol=lf
+*.html      text eol=lf
+Dockerfile  text eol=lf
