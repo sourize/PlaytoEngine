@@ -1,5 +1,5 @@
-# In dev (Docker): VITE_API_BASE is not set → falls back to '' → /api/v1 → proxied by Vite to backend
-# In prod (Vercel): VITE_API_BASE=https://playto-backend.onrender.com → full URL to Render
+// In dev (Docker): VITE_API_BASE is not set → falls back to '' → /api/v1 → proxied by Vite to backend
+// In prod (Vercel): VITE_API_BASE=https://playto-backend-production.up.railway.app → full URL to Railway
 const BASE = `${import.meta.env.VITE_API_BASE ?? ''}/api/v1`
 
 export async function getMerchants() {
