@@ -7,10 +7,16 @@ export default function App() {
   const [selected, setSelected] = useState(null)
   const [loading, setLoading] = useState(true)
 
+  const [error, setError] = useState(null)
+
   useEffect(() => {
     getMerchants().then(data => {
       setMerchants(data)
       if (data.length > 0) setSelected(data[0])
+      setLoading(false)
+    }).catch(err => {
+      console.error(err)
+      setError(err.message || 'Failed to connect to backend')
       setLoading(false)
     })
   }, [])
@@ -39,7 +45,13 @@ export default function App() {
       </header>
 
       <main className="max-w-5xl mx-auto px-6 py-8">
-        {loading ? (
+        {error ? (
+          <div className="text-center py-20 text-red-500">
+            <p className="font-semibold text-lg">Connection Error</p>
+            <p className="text-sm mt-2">{error}</p>
+            <p className="text-sm mt-4 text-slate-500">Did you set VITE_API_BASE in Vercel before deploying?</p>
+          </div>
+        ) : loading ? (
           <div className="text-center py-20 text-slate-500">Loading...</div>
         ) : selected ? (
           <Dashboard merchant={selected} />
