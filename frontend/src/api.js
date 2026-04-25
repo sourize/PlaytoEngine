@@ -1,6 +1,7 @@
 // In dev (Docker): VITE_API_BASE is not set → falls back to '' → /api/v1 → proxied by Vite to backend
 // In prod (Vercel): VITE_API_BASE=https://playto-backend-production.up.railway.app → full URL to Railway
-const BASE = `${import.meta.env.VITE_API_BASE ?? ''}/api/v1`
+const envBase = import.meta.env.VITE_API_BASE || ''
+const BASE = `${envBase.replace(/\/+$/, '')}/api/v1`
 
 export async function getMerchants() {
   const r = await fetch(`${BASE}/merchants/`)
