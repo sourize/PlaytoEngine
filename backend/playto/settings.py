@@ -7,7 +7,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-prod')
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
+_hosts = os.environ.get('ALLOWED_HOSTS', '*').split(',')
+ALLOWED_HOSTS = _hosts + ['healthcheck.railway.app', '*']
 
 INSTALLED_APPS = [
     'django.contrib.contenttypes',
