@@ -1,10 +1,8 @@
 [build]
 builder = "DOCKERFILE"
-dockerfilePath = "backend/Dockerfile"
-dockerContext = "backend"
+dockerfilePath = "Dockerfile"
 
 [deploy]
-# start.sh lives in backend/ — copied into /app by the Dockerfile
 startCommand = "sh start.sh"
 healthcheckPath = "/api/v1/merchants/"
 healthcheckTimeout = 300
