@@ -15,7 +15,6 @@ A production-grade payout engine demonstrating **money integrity**, **concurrenc
 ## Quick Start
 
 ```bash
-cd playto-payout
 docker compose up --build
 ```
 
